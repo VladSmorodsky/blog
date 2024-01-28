@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: develop
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+      - 5433:${DB_PORT}
+    volumes:
+      - dbdata:/db/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+volumes:
+  dbdata: {}
