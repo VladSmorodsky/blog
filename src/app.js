@@ -15,7 +15,6 @@ app.use('/api/v1', postRouter, categoryRouter);
 
 sequelize.sync()
     .then(result => {
-        // console.log(result)
         app.listen(process.env.PORT, () => {
             console.log(`Server is running at ${process.env.PORT}`);
         });
