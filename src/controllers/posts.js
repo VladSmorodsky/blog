@@ -1,41 +1,70 @@
-exports.getPosts = (req, res, next) => {
+const Post = require('../models/post');
+const Category = require('../models/category');
+
+exports.getPosts = async (req, res, next) => {
+    const posts = await Post.findAll({include: Category});
     res.status(200).json({
         status: 'success',
-        data: [
-            {
-                id: 1,
-                title: 'Post 1',
-                content: "Hello from post",
-                createdAt: Date.now()
-            }
-        ]
+        data: posts
     });
 }
 
-exports.createPost = (req, res, next) => {
+exports.createPost = async (req, res, next) => {
+    const {title, categoryId, content} = req.body;
+    const post = await Post.create({
+        title,
+        content,
+        categoryId
+    });
+
     res.status(201).json({
-        status: 'success'
+        status: 'success',
+        data: post
     });
 }
 
-exports.getPost = (req, res, next) => {
+exports.getPost = async (req, res, next) => {
+    const postId = req.params.id;
+
+    const post = await Post.findByPk(postId);
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
     res.status(200).json({
         status: 'success',
-        data: {
-            id: 1,
-            title: 'Post 1',
-            content: "Hello from post",
-            createdAt: Date.now()
-        }
+        data: post
     });
 }
 
-exports.editPost = (req, res, next) => {
+exports.editPost = async (req, res, next) => {
+    const {title, categoryId, content} = req.body;
+    const postId = req.params.id;
+
+    const existedPost = await Post.findByPk(postId);
+
+    if (!existedPost) {
+        throw new Error('Post not found');
+    }
+
+    await existedPost.update({title, categoryId, content})
+
     res.status(200).json({
-        status: 'success'
+        status: 'success',
+        data: existedPost
     });
 }
 
-exports.deletePost = (req, res, next) => {
+exports.deletePost = async (req, res, next) => {
+    const postId = req.params.id;
+    const existedPost = await Post.findByPk(postId);
+
+    if (!existedPost) {
+        throw new Error('Post not found');
+    }
+
+    await existedPost.destroy();
+
     res.status(204).json();
 }
