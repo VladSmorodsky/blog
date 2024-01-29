@@ -1,11 +1,24 @@
 const express = require('express');
 const dotenv = require('dotenv').config();
 const postRouter = require('./routes/posts');
+const categoryRouter = require('./routes/categories');
+const logger = require('./util/logger');
+const sequelize = require('./util/database')
 
 const app = express();
 
-app.use('/api/v1', postRouter);
+app.use(express.json());
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running at ${process.env.PORT}`);
-});
+app.use(logger);
+
+app.use('/api/v1', postRouter, categoryRouter);
+
+sequelize.sync()
+    .then(result => {
+        app.listen(process.env.PORT, () => {
+            console.log(`Server is running at ${process.env.PORT}`);
+        });
+    })
+    .catch(err => {
+        console.log(err)
+    });
