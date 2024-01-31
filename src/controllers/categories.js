@@ -1,4 +1,5 @@
 const Category = require('../models/category');
+const AppError = require("../errors/AppError");
 
 exports.getCategories = async (req, res, next) => {
     const categories = await Category.findAll();
@@ -28,7 +29,7 @@ exports.updateCategory = async (req, res, next) => {
     const existedCategory = await Category.findByPk(categoryId);
 
     if (!existedCategory) {
-        throw new Error('Category not found');
+        return next(new AppError(404, 'Category not found'));
     }
 
     await existedCategory.update({title});
@@ -45,7 +46,7 @@ exports.deleteCategory = async (req, res, next) => {
     const existedCategory = await Category.findByPk(categoryId);
 
     if (!existedCategory) {
-        throw new Error('Category not found');
+        return next(new AppError(404, 'Category not found'));
     }
 
     await existedCategory.destroy();

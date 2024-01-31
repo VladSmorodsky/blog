@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const Category = require('../models/category');
+const AppError = require("../errors/AppError");
 
 exports.getPosts = async (req, res, next) => {
     const posts = await Post.findAll({include: Category});
@@ -29,7 +30,7 @@ exports.getPost = async (req, res, next) => {
     const post = await Post.findByPk(postId);
 
     if (!post) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     res.status(200).json({
@@ -45,7 +46,7 @@ exports.editPost = async (req, res, next) => {
     const existedPost = await Post.findByPk(postId);
 
     if (!existedPost) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     await existedPost.update({title, categoryId, content})
@@ -61,7 +62,7 @@ exports.deletePost = async (req, res, next) => {
     const existedPost = await Post.findByPk(postId);
 
     if (!existedPost) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     await existedPost.destroy();
