@@ -5,6 +5,7 @@ const categoryRouter = require('./routes/categories');
 const logger = require('./util/logger');
 const sequelize = require('./util/database')
 const AppError = require("./errors/AppError");
+const {ValidationError} = require("sequelize");
 
 const app = express();
 
@@ -15,11 +16,17 @@ app.use(logger);
 app.use('/api/v1', postRouter, categoryRouter);
 
 app.use((err, req, res, next) => {
-    console.log('[AppError]', err);
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({
-            status: "error",
+            status: "fail",
             message: err.message
+        });
+    }
+
+    if (err instanceof ValidationError) {
+        return res.status(400).json({
+            status: 'fail',
+            message: `Field ${err.errors[0].path} cannot be ${err.errors[0].validatorName}`
         });
     }
 
