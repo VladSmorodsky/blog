@@ -1,15 +1,17 @@
 const Post = require('../models/post');
 const Category = require('../models/category');
+const AppError = require("../errors/AppError");
+const {catchAsync} = require("../util/catchAsync");
 
-exports.getPosts = async (req, res, next) => {
+exports.getPosts = catchAsync(async (req, res, next) => {
     const posts = await Post.findAll({include: Category});
     res.status(200).json({
         status: 'success',
         data: posts
     });
-}
+})
 
-exports.createPost = async (req, res, next) => {
+exports.createPost = catchAsync(async (req, res, next) => {
     const {title, categoryId, content} = req.body;
     const post = await Post.create({
         title,
@@ -21,31 +23,31 @@ exports.createPost = async (req, res, next) => {
         status: 'success',
         data: post
     });
-}
+})
 
-exports.getPost = async (req, res, next) => {
+exports.getPost = catchAsync(async (req, res, next) => {
     const postId = req.params.id;
 
     const post = await Post.findByPk(postId);
 
     if (!post) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     res.status(200).json({
         status: 'success',
         data: post
     });
-}
+})
 
-exports.editPost = async (req, res, next) => {
+exports.editPost = catchAsync(async (req, res, next) => {
     const {title, categoryId, content} = req.body;
     const postId = req.params.id;
 
     const existedPost = await Post.findByPk(postId);
 
     if (!existedPost) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     await existedPost.update({title, categoryId, content})
@@ -54,17 +56,17 @@ exports.editPost = async (req, res, next) => {
         status: 'success',
         data: existedPost
     });
-}
+});
 
-exports.deletePost = async (req, res, next) => {
+exports.deletePost = catchAsync(async (req, res, next) => {
     const postId = req.params.id;
     const existedPost = await Post.findByPk(postId);
 
     if (!existedPost) {
-        throw new Error('Post not found');
+        return next(new AppError(404, 'Post not found'));
     }
 
     await existedPost.destroy();
 
     res.status(204).json();
-}
+})
