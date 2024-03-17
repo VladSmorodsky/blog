@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const postRouter = require('./routes/posts');
 const categoryRouter = require('./routes/categories');
+const userRouter = require('./routes/users');
 const logger = require('./util/logger');
 const sequelize = require('./util/database')
 const AppError = require("./errors/AppError");
@@ -13,7 +14,7 @@ app.use(express.json());
 
 app.use(logger);
 
-app.use('/api/v1', postRouter, categoryRouter);
+app.use('/api/v1', postRouter, categoryRouter, userRouter);
 
 app.use((err, req, res, next) => {
     if (err instanceof AppError) {
