@@ -1,6 +1,7 @@
 const {catchAsync} = require("../util/catchAsync");
 const AppError = require("../errors/AppError");
 const User = require('../models/user');
+const bcrypt= require('bcryptjs');
 
 exports.createUser = catchAsync(async (req, res, next) => {
     const {firstName, lastName, email, password, passwordConfirm} = req.body;
@@ -9,8 +10,10 @@ exports.createUser = catchAsync(async (req, res, next) => {
         return next(new AppError(400, 'Password is not confirmed'))
     }
 
+    const hashedPassword = await bcrypt.hash(password, 12);
+
     const user = await User.create({
-        firstName, lastName, email, password
+        firstName, lastName, email, password: hashedPassword
     });
 
     res.status(201).json({
@@ -33,7 +36,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
 })
 
 exports.getUsers = catchAsync( async (req, res, next) => {
-    const users = await User.findAll();
+    const users = await User.findAll({attributes: ['id', 'firstName', 'lastName', 'email']});
 
     res.status(200).json({
         status: 'success',
