@@ -3,7 +3,7 @@ const Category = require('../models/category');
 const AppError = require("../errors/AppError");
 const {catchAsync} = require("../util/catchAsync");
 
-const postsPerPage = 9;
+const postsPerPage = 2;
 
 exports.getPosts = catchAsync(async (req, res, next) => {
     const page = req.query.page ?? 1;
@@ -18,7 +18,12 @@ exports.getPosts = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        data: posts
+        data: posts,
+        pagination: {
+            page: page,
+            totalRows: postsCount,
+            rowsPerPage: postsPerPage
+        }
     });
 })
 
