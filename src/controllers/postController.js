@@ -3,16 +3,12 @@ const Category = require('../models/category');
 const AppError = require("../errors/AppError");
 const {catchAsync} = require("../util/catchAsync");
 
-const postsPerPage = 2;
+const postsPerPage = 3;
 
 exports.getPosts = catchAsync(async (req, res, next) => {
     const page = req.query.page ?? 1;
     const offset= (page - 1) * postsPerPage;
     const postsCount = await Post.count();
-
-    if (postsCount <= offset) {
-        return next(new AppError(404, 'Page not found'));
-    }
 
     const posts = await Post.findAll({include: Category, limit: postsPerPage, offset: offset });
 

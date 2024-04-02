@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const {promisify} = require('util');
 const User = require('../models/user');
 
-exports.protected = catchAsync(async (req, res, next) => {
+exports.protectedRoute = catchAsync(async (req, res, next) => {
     let token;
     const {authorization} = req.headers;
 
