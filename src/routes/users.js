@@ -1,16 +1,16 @@
 const express = require('express');
 const {createUser, getUser, getUsers, updateUser, deleteUser} = require("../controllers/userController");
-const {protected} = require("../middlewares/authMiddleware");
+const {protectedRoute} = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 
 router.route('/users')
-    .get(protected, getUsers)
-    .post(protected, createUser);
+    .get(protectedRoute, getUsers)
+    .post(protectedRoute, createUser);
 
 router.route('/users/:id')
-    .get(protected, getUser)
-    .put(protected, updateUser)
-    .delete(protected, deleteUser);
+    .get(protectedRoute, getUser)
+    .put(protectedRoute, updateUser)
+    .delete(protectedRoute, deleteUser);
 
 module.exports = router;

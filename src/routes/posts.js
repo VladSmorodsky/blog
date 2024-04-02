@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const {getPosts, createPost, getPost, deletePost, editPost} = require ('../controllers/postController');
-const {protected} = require("../middlewares/authMiddleware");
+const {protectedRoute} = require("../middlewares/authMiddleware");
 
 router.route('/posts')
     .get(getPosts)
-    .post(protected, createPost);
+    .post(protectedRoute, createPost);
 
 router.route('/posts/:id')
     .get(getPost)
-    .put(protected, editPost)
-    .delete(protected, deletePost);
+    .put(protectedRoute, editPost)
+    .delete(protectedRoute, deletePost);
 
 module.exports = router;
