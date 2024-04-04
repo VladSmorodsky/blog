@@ -16,11 +16,15 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     }
 
     const posts = await Post.findAll({
+        attributes: ['title'],
         include: Category, limit: postsPerPage, offset: offset,
         where: whereOptions
     });
 
-    const postsCount = posts.length;
+    const postsCount = await Post.count({
+        where: whereOptions
+    });
+
     res.status(200).json({
         status: 'success',
         data: posts,
