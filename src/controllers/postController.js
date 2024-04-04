@@ -16,7 +16,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     }
 
     const posts = await Post.findAll({
-        attributes: ['title'],
+        attributes: ['id', 'title'],
         include: Category, limit: postsPerPage, offset: offset,
         where: whereOptions
     });
