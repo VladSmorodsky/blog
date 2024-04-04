@@ -6,12 +6,21 @@ const {catchAsync} = require("../util/catchAsync");
 const postsPerPage = 3;
 
 exports.getPosts = catchAsync(async (req, res, next) => {
-    const page = req.query.page ?? 1;
+    const categoryId = req.query.category ?? null;
+    const page = req.query.page * 1 || 1;
     const offset= (page - 1) * postsPerPage;
-    const postsCount = await Post.count();
 
-    const posts = await Post.findAll({include: Category, limit: postsPerPage, offset: offset });
+    let whereOptions = {};
+    if (categoryId) {
+        whereOptions.categoryId = categoryId;
+    }
 
+    const posts = await Post.findAll({
+        include: Category, limit: postsPerPage, offset: offset,
+        where: whereOptions
+    });
+
+    const postsCount = posts.length;
     res.status(200).json({
         status: 'success',
         data: posts,
