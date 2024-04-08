@@ -10,9 +10,11 @@ const AppError = require("./errors/AppError");
 const {ValidationError} = require("sequelize");
 const {TokenExpiredError, JsonWebTokenError} = require("jsonwebtoken");
 const cookieParser = require('cookie-parser');
+const cors = require("cors");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(logger);

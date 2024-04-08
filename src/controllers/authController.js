@@ -10,33 +10,32 @@ exports.login = catchAsync(async (req, res, next) => {
     const user = await User.findOne({ where: {email: userEmail}});
 
     if (!user) {
-        return next(new AppError(400, 'Wrong user credentials'));
+        return next(new AppError(401, 'Wrong user credentials'));
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-        return next(new AppError(400, 'Wrong user credentials'));
+        return next(new AppError(401, 'Wrong user credentials'));
     }
 
     const token = await json.sign({id: user.id}, process.env.TOKEN_SECRET, {
         expiresIn: process.env.TOKEN_TTL
     });
 
-    const {firstName, lastName, email} = user;
+    const {email} = user;
 
     return res
-        .cookie('jwt', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'prod'
-        })
+        // .cookie('jwt', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'prod'
+        // })
         .status(200)
         .json({
             status: 'success',
             data: {
-                firstName,
-                lastName,
-                email
+                email,
+                token
             }
         });
 })
