@@ -41,7 +41,8 @@ exports.createPost = catchAsync(async (req, res, next) => {
     const post = await Post.create({
         title,
         content,
-        categoryId
+        categoryId,
+        userId: req.user.id
     });
 
     res.status(201).json({
@@ -75,7 +76,7 @@ exports.editPost = catchAsync(async (req, res, next) => {
         return next(new AppError(404, 'Post not found'));
     }
 
-    await existedPost.update({title, categoryId, content})
+    await existedPost.update({title, categoryId, content, userId: req.user.id})
 
     res.status(200).json({
         status: 'success',

@@ -3,6 +3,8 @@ const AppError = require("../errors/AppError");
 const jwt = require('jsonwebtoken');
 const {promisify} = require('util');
 const User = require('../models/user');
+const {createHash} = require('crypto');
+const redisClient = require('../util/redisClient');
 
 exports.protectedRoute = catchAsync(async (req, res, next) => {
     let token;
@@ -20,6 +22,13 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
     const user = await User.findByPk(id);
 
     if (!user) {
+        return next(new AppError(404, 'User not found'));
+    }
+
+    const authKey = createHash('md5').update(`token:${user.id}${user.firstName}${user.createdAt}`).digest('hex');
+    const authToken = await redisClient.get(authKey);
+
+    if (!authToken) {
         return next(new AppError(404, 'User not found'));
     }
 

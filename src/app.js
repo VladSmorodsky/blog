@@ -11,6 +11,7 @@ const {ValidationError} = require("sequelize");
 const {TokenExpiredError, JsonWebTokenError} = require("jsonwebtoken");
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
+const redisClient = require("./util/redisClient");
 
 const app = express();
 
