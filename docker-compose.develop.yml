@@ -11,6 +11,8 @@ services:
       - postgres
     volumes:
       - .:/app
+    networks:
+      - blog
 
   postgres:
     container_name: postgres
@@ -22,6 +24,23 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
+    networks:
+      - blog
+
+  redis:
+    image: 'redis:alpine'
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - '6379:6379'
+    networks:
+      - blog
+
 
 volumes:
   dbdata: {}
+
+networks:
+  blog:
