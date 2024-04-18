@@ -18,7 +18,8 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     const posts = await Post.findAll({
         attributes: ['id', 'title'],
         include: Category, limit: postsPerPage, offset: offset,
-        where: whereOptions
+        where: whereOptions,
+        order: [['createdAt', 'DESC']]
     });
 
     const postsCount = await Post.count({
@@ -40,7 +41,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
     const {title, categoryId, content} = req.body;
     const post = await Post.create({
         title,
-        content,
+        content: JSON.stringify(content),
         categoryId,
         userId: req.user.id
     });
@@ -55,6 +56,7 @@ exports.getPost = catchAsync(async (req, res, next) => {
     const postId = req.params.id;
 
     const post = await Post.findByPk(postId);
+    post.content = JSON.parse(post.content);
 
     if (!post) {
         return next(new AppError(404, 'Post not found'));
