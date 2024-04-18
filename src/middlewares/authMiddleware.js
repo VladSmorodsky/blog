@@ -32,6 +32,10 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
         return next(new AppError(404, 'User not found'));
     }
 
+    if (authToken !== token) {
+        return next(new AppError(401, 'Please login to the system'));
+    }
+
     //TODO add case for reseting password
     req.user = user;
 
