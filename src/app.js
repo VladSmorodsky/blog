@@ -20,6 +20,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(logger);
 
+app.use('/upload', express.static(process.env.IMAGES_PATH))
+
 app.use('/api/v1', postRouter, categoryRouter, userRouter, authRouter);
 
 app.use((err, req, res, next) => {
@@ -61,7 +63,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-sequelize.sync()
+sequelize.sync({alter: true})
     .then(result => {
         app.listen(process.env.PORT, () => {
             console.log(`Server is running at ${process.env.PORT}`);
