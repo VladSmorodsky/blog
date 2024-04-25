@@ -76,9 +76,9 @@ exports.createPost = catchAsync(async (req, res, next) => {
         const postImagesPath = await createPostImageFolder(post);
 
         await sharp(imageCover.buffer)
-            .resize(null, 200)
+            .resize(500, 300)
             .toFormat('png')
-            .png({quality: 90})
+            .png({quality: 100})
             .toFile(`${postImagesPath}/${imageCover.originalname}`);
     }
 
@@ -131,6 +131,8 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     }
 
     await existedPost.destroy();
+
+    //TODO add removing the post image directory
 
     res.status(204).json();
 })
