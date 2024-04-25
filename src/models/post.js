@@ -14,6 +14,9 @@ const Post = sequelize.define('post', {
         type: Sequelize.STRING,
         allowNull: false
     },
+    'imageCover': {
+        type: Sequelize.STRING
+    },
     'content': {
         type: Sequelize.TEXT,
         allowNull: false

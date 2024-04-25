@@ -2,8 +2,30 @@ const Post = require('../models/post');
 const Category = require('../models/category');
 const AppError = require("../errors/AppError");
 const {catchAsync} = require("../util/catchAsync");
+const multer = require('multer');
+const sharp = require('sharp');
+const {mkdirSync, existsSync, promises} = require("fs");
+const {resolve} = require("path");
 
-const postsPerPage = 3;
+const postsPerPage = 9;
+
+const storage = multer.memoryStorage();
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true);
+    } else {
+        cb(new AppError(400, 'Please provide a correct image file'));
+    }
+}
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter
+});
+
+exports.uploadPostImages = upload.fields([
+    {name: 'imageCover', max: 1}
+]);
 
 exports.getPosts = catchAsync(async (req, res, next) => {
     const categoryId = req.query.category ?? null;
@@ -16,7 +38,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     }
 
     const posts = await Post.findAll({
-        attributes: ['id', 'title'],
+        attributes: ['id', 'title', 'imageCover'],
         include: Category, limit: postsPerPage, offset: offset,
         where: whereOptions,
         order: [['createdAt', 'DESC']]
@@ -39,12 +61,26 @@ exports.getPosts = catchAsync(async (req, res, next) => {
 
 exports.createPost = catchAsync(async (req, res, next) => {
     const {title, categoryId, content} = req.body;
+
+    const imageCover = req.files.imageCover.length ? req.files.imageCover[0] : null
+
     const post = await Post.create({
         title,
         content: JSON.stringify(content),
         categoryId,
+        imageCover: imageCover ? imageCover.originalname : null,
         userId: req.user.id
     });
+
+    if (imageCover) {
+        const postImagesPath = await createPostImageFolder(post);
+
+        await sharp(imageCover.buffer)
+            .resize(500, 300)
+            .toFormat('png')
+            .png({quality: 100})
+            .toFile(`${postImagesPath}/${imageCover.originalname}`);
+    }
 
     res.status(201).json({
         status: 'success',
@@ -96,5 +132,33 @@ exports.deletePost = catchAsync(async (req, res, next) => {
 
     await existedPost.destroy();
 
+    //TODO add removing the post image directory
+
     res.status(204).json();
 })
+
+const createPostImageFolder = async (post) => {
+    const imagesPath = resolve(`${process.env.IMAGES_PATH}/${post.id}`);
+    try {
+        console.log('[path]', imagesPath);
+
+        const stat = await promises.stat(imagesPath);
+
+        if (stat.isDirectory()) {
+            return imagesPath;
+        }
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            // Directory does not exist, so create it
+            try {
+                await promises.mkdir(imagesPath, { recursive: true });
+
+                return imagesPath;
+            } catch (err) {
+                throw new AppError(500, 'Error with creating directory');
+            }
+        } else {
+            throw new AppError(500, 'Error with creating directory');
+        }
+    }
+}
