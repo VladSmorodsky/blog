@@ -1,6 +1,7 @@
 const Category = require('../models/category');
 const AppError = require("../errors/AppError");
 const {catchAsync} = require("../util/catchAsync");
+const Post = require("../models/post");
 
 exports.getCategories = catchAsync(async (req, res, next) => {
     const categories = await Category.findAll();
@@ -8,6 +9,20 @@ exports.getCategories = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         data: categories
+    });
+})
+
+exports.getCategory = catchAsync(async (req, res, next) => {
+    const categoryId = req.params.id;
+    const category = await Category.findByPk(categoryId);
+
+    if (!category) {
+        return next(new AppError(404, 'Category not found'));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        data: category
     });
 })
 
@@ -43,14 +58,25 @@ exports.updateCategory = catchAsync(async (req, res, next) => {
 
 exports.deleteCategory = catchAsync(async (req, res, next) => {
     const categoryId = req.params.id;
+    const newCategoryId = req.params.newCategoryId;
 
-    const existedCategory = await Category.findByPk(categoryId);
+    console.log('[bode]', newCategoryId)
 
-    if (!existedCategory) {
+    const deletedCategory = await Category.findByPk(categoryId);
+
+    if (!deletedCategory) {
         return next(new AppError(404, 'Category not found'));
     }
 
-    await existedCategory.destroy();
+    const newCategory = await Category.findByPk(newCategoryId);
+
+    if (!newCategory) {
+        return next(new AppError(404, 'New Category not found'));
+    }
+
+    await Post.update({categoryId: newCategoryId}, {where: {categoryId: categoryId}});
+
+    await deletedCategory.destroy();
 
     res.status(204).json();
 })
