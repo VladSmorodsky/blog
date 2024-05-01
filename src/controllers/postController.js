@@ -4,7 +4,7 @@ const AppError = require("../errors/AppError");
 const {catchAsync} = require("../util/catchAsync");
 const multer = require('multer');
 const sharp = require('sharp');
-const {mkdirSync, existsSync, promises} = require("fs");
+const {promises} = require("fs");
 const {resolve} = require("path");
 
 const postsPerPage = 9;
@@ -114,7 +114,24 @@ exports.editPost = catchAsync(async (req, res, next) => {
         return next(new AppError(404, 'Post not found'));
     }
 
-    await existedPost.update({title, categoryId, content, userId: req.user.id})
+    let imageCover = req.files.imageCover.length ? req.files.imageCover[0] : null
+
+    await existedPost.update({
+        title,
+        categoryId,
+        content: JSON.stringify(content),
+        userId: req.user.id, imageCover: imageCover ? imageCover.originalname : null
+    })
+
+    if (imageCover) {
+        const postImagesPath = await createPostImageFolder(existedPost);
+
+        await sharp(imageCover.buffer)
+            .resize(500, 300)
+            .toFormat('png')
+            .png({quality: 100})
+            .toFile(`${postImagesPath}/${imageCover.originalname}`);
+    }
 
     res.status(200).json({
         status: 'success',
@@ -130,7 +147,10 @@ exports.deletePost = catchAsync(async (req, res, next) => {
         return next(new AppError(404, 'Post not found'));
     }
 
+    const imagesPath = resolve(`${process.env.IMAGES_PATH}/${postId}`);
+
     await existedPost.destroy();
+    await promises.rmdir(imagesPath, {recursive: true});
 
     //TODO add removing the post image directory
 
@@ -140,8 +160,6 @@ exports.deletePost = catchAsync(async (req, res, next) => {
 const createPostImageFolder = async (post) => {
     const imagesPath = resolve(`${process.env.IMAGES_PATH}/${post.id}`);
     try {
-        console.log('[path]', imagesPath);
-
         const stat = await promises.stat(imagesPath);
 
         if (stat.isDirectory()) {

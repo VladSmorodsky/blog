@@ -9,7 +9,7 @@ router.route('/posts')
 
 router.route('/posts/:id')
     .get(getPost)
-    .put(protectedRoute, editPost)
+    .put(protectedRoute, uploadPostImages, editPost)
     .delete(protectedRoute, deletePost);
 
 module.exports = router;
