@@ -6,6 +6,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const {promises} = require("fs");
 const {resolve} = require("path");
+const {Op} = require("sequelize");
 
 const postsPerPage = 9;
 
@@ -31,10 +32,17 @@ exports.getPosts = catchAsync(async (req, res, next) => {
     const categoryId = req.query.category ?? null;
     const page = req.query.page * 1 || 1;
     const offset= (page - 1) * postsPerPage;
+    const search = req.query.search ?? null;
 
     let whereOptions = {};
     if (categoryId) {
         whereOptions.categoryId = categoryId;
+    }
+
+    if (search) {
+        whereOptions.title = {
+            [Op.iLike]: `%${search}%`
+        }
     }
 
     const posts = await Post.findAll({
